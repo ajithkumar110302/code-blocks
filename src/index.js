@@ -21,15 +21,25 @@ app.use('/comments', commentRoutes);
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
-  try {
-    await sequelize.sync();
-    console.log('Database synced successfully');
-    
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Unable to start server:', error);
+  let retries = 5;
+  
+  while (retries) {
+    try {
+      await sequelize.authenticate();
+      console.log('Database connection established successfully');
+      await sequelize.sync();
+      console.log('Database synced successfully');
+      
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+      break;
+    } catch (error) {
+      console.error('Unable to connect to the database:', error);
+      retries -= 1;
+      console.log(`Retries left: ${retries}`);
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds
+    }
   }
 }
 

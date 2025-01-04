@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   api:
@@ -6,7 +6,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_USER=postgres
@@ -15,6 +16,7 @@ services:
       - JWT_SECRET=your-secret-key
     networks:
       - blog-network
+    restart: unless-stopped
 
   db:
     image: postgres:15-alpine
@@ -28,6 +30,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - blog-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 networks:
   blog-network:

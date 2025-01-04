@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  user-service:
+    build: 
+      context: .
+      dockerfile: services/user/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=blogdb
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - blog-network
+
+  blog-service:
+    build:
+      context: .
+      dockerfile: services/blog/Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=blogdb
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - blog-network
+
+  comment-service:
+    build:
+      context: .
+      dockerfile: services/comment/Dockerfile
+    ports:
+      - "3002:3002"
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=blogdb
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - blog-network
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=blogdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - blog-network
+
+networks:
+  blog-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
